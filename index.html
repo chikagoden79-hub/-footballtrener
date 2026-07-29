@@ -3,894 +3,990 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Футбол 5х5: Менеджер Турнира</title>
+    <title>CYBER-PITCH 5X5: Глубокое обучение и Физический Движок</title>
     <style>
+        :root {
+            --bg-main: #08080c;
+            --bg-card: #12121a;
+            --bg-input: #1c1c28;
+            --accent: #00ff66;
+            --accent-glow: rgba(0, 255, 102, 0.4);
+            --text-main: #e2e2ec;
+            --text-muted: #78788c;
+            --border: #222232;
+        }
+
         body {
             margin: 0;
-            background-color: #121212;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Consolas', monospace, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding-bottom: 30px;
+            padding-bottom: 50px;
         }
+
         header {
-            margin: 20px 0;
+            margin: 25px 0;
             text-align: center;
         }
-        h1 {
+
+        header h1 {
             margin: 0;
             font-size: 28px;
-            color: #4CAF50;
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
+            letter-spacing: 2px;
         }
-        
-        /* СТИЛИ МЕНЮ РАСПРЕДЕЛЕНИЯ */
+
+        header p {
+            color: var(--text-muted);
+            margin: 5px 0 0 0;
+            font-size: 13px;
+        }
+
         #setup-menu {
             display: flex;
             flex-direction: column;
             width: 95%;
-            max-width: 1200px;
+            max-width: 1400px;
             gap: 20px;
         }
+
         .menu-panels {
             display: flex;
-            gap: 20px;
+            gap: 25px;
         }
+
         #pool-container {
             flex: 1;
-            background: #1e1e1e;
-            padding: 15px;
+            background: var(--bg-card);
+            padding: 20px;
             border-radius: 8px;
-            border: 1px solid #333;
-            max-height: 600px;
+            border: 1px solid var(--border);
+            max-height: 650px;
             overflow-y: auto;
         }
+
+        #pool-container h3, .team-box h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         #teams-container {
             flex: 2;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            max-height: 600px;
+            gap: 20px;
+            max-height: 650px;
             overflow-y: auto;
-            padding-right: 5px;
         }
+
         .team-box {
-            background: #1e1e1e;
+            background: var(--bg-card);
             border-radius: 8px;
-            padding: 12px;
-            border-top: 5px solid #ccc;
-            min-height: 120px;
+            padding: 15px;
+            border: 1px solid var(--border);
+            border-left: 4px solid #ccc;
         }
+
         .player-pool-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 8px;
-            min-height: 100px;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
         }
+
         .team-slots {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            min-height: 50px;
-            background: #252525;
-            padding: 8px;
+            gap: 10px;
+            min-height: 60px;
+            background: rgba(0,0,0,0.4);
+            padding: 10px;
             border-radius: 4px;
-            border: 1px dashed #444;
-        }
-        .player-chip {
-            background: #ffffff;
-            color: #121212;
-            padding: 6px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: grab;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: transform 0.1s;
-        }
-        .player-chip:hover {
-            transform: scale(1.05);
-        }
-        .player-chip:active {
-            cursor: grabbing;
+            border: 1px dashed var(--border);
         }
 
-        /* ИГРОВОЙ ЭКРАН */
+        .player-chip {
+            background: #1c1c28;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: grab;
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: all 0.15s ease;
+        }
+
+        .player-chip:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+
         #game-screen {
             display: none;
-            gap: 20px;
+            gap: 25px;
             align-items: flex-start;
             width: 95%;
-            max-width: 1200px;
+            max-width: 1400px;
         }
+
         canvas {
-            background-color: #2e7d32;
-            border: 4px solid #fff;
+            background-color: #0b1d12;
+            border: 2px solid var(--border);
             border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         }
+
         .sidebar {
-            width: 320px;
-            background: #1e1e1e;
-            padding: 15px;
+            width: 380px;
+            background: var(--bg-card);
+            padding: 20px;
             border-radius: 8px;
-            border: 1px solid #333;
-            max-height: 550px;
-            overflow-y: auto;
+            border: 1px solid var(--border);
         }
+
         .sidebar h3 {
             margin-top: 0;
-            border-bottom: 2px solid #444;
-            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
             font-size: 16px;
+            color: var(--accent);
+            text-transform: uppercase;
         }
+
         button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 15px;
+            background-color: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 12px 20px;
             border-radius: 4px;
             cursor: pointer;
+            font-family: inherit;
             font-weight: bold;
-            margin: 5px 0;
+            transition: all 0.2s;
             width: 100%;
-            font-size: 14px;
         }
-        button:hover { background-color: #45a049; }
-        button:disabled { background-color: #444; color: #777; cursor: not-allowed; }
-        .controls-panel {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
+
+        button:hover {
+            background-color: var(--accent);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent-glow);
         }
-        .controls-panel button { width: auto; flex: 1; }
+        button:disabled { border-color: #333; color: #333; cursor: not-allowed; background: transparent; box-shadow: none;}
+
+        .controls-panel { display: flex; gap: 10px; margin-top: 15px; }
+        .controls-panel button { flex: 1; padding: 8px; font-size: 12px; }
+
         .stat-item {
             font-size: 14px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
         }
+
         #match-log {
             font-size: 11px;
-            background: #0a0a0a;
-            padding: 8px;
+            background: #050508;
+            padding: 10px;
             border-radius: 4px;
-            height: 90px;
+            height: 140px;
             overflow-y: auto;
-            font-family: monospace;
-            margin-top: 10px;
-            border: 1px solid #222;
+            margin-top: 15px;
+            border: 1px solid var(--border);
+            color: #00ff66;
         }
-        table {
-            width: 100%;
-            font-size: 12px;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            border: 1px solid #333;
-            padding: 5px;
-            text-align: left;
-        }
-        th { background-color: #2a2a2a; }
 
-        /* МОДАЛЬНОЕ ОКНО СТАТИСТИКИ */
+        table { width: 100%; font-size: 12px; border-collapse: collapse; margin-top: 12px; }
+        th, td { border: 1px solid var(--border); padding: 6px; text-align: left; }
+        th { background-color: rgba(0,0,0,0.5); color: var(--text-muted); }
+
         .modal {
             display: none;
             position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            backdrop-filter: blur(4px);
-            justify-content: center;
-            align-items: center;
+            z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            justify-content: center; align-items: center;
         }
+
         .modal-content {
-            background-color: #222;
-            padding: 20px;
-            border-radius: 8px;
-            width: 350px;
-            border: 1px solid #444;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            background-color: var(--bg-card);
+            padding: 25px; border-radius: 8px;
+            width: 500px; border: 1px solid var(--border);
         }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #444;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-        .modal-header h2 { margin: 0; font-size: 20px; color: #4CAF50; }
-        .close-btn { color: #aaa; font-size: 24px; font-weight: bold; cursor: pointer; }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+        .close-btn { color: var(--text-muted); font-size: 24px; cursor: pointer; }
         .close-btn:hover { color: #fff; }
-        .progress-bar {
-            background-color: #444;
+
+        .nn-visualizer {
+            background: #050508;
+            border: 1px solid var(--border);
             border-radius: 4px;
-            height: 8px;
-            width: 100%;
-            margin-top: 4px;
+            height: 150px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px;
         }
-        .progress-fill {
-            background-color: #4CAF50;
-            height: 100%;
-            border-radius: 4px;
-            width: 0%;
-            transition: width 0.3s;
-        }
-        .stat-group {
-            margin-bottom: 12px;
-        }
+        .nn-layer { display: flex; flex-direction: column; gap: 4px; }
+        .nn-node { width: 10px; height: 10px; border-radius: 50%; background: #333; }
+        .nn-node.active { background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Футбол 5х5: Эволюция Ботов</h1>
-    <p id="sub-title">Распределите 40 ботов по 8 командам (по 5 игроков в каждой)</p>
+    <h1>CYBER-PITCH 5X5: DEEP POLICY GRADIENT</h1>
+    <p>Автономные ИИ-агенты с полносвязной топологией нейросетей и физикой твердых тел</p>
 </header>
 
-<!-- ЭКРАН НАСТРОЙКИ И ДРАФТА -->
 <div id="setup-menu">
     <div class="menu-panels">
         <div id="pool-container">
-            <h3>Свободные агенты (Клик — инфо)</h3>
-            <div class="player-pool-grid" id="player-pool" ondrop="drop(event, 'pool')" ondragover="allowDrop(event)">
-                <!-- Заполняется JS -->
-            </div>
+            <h3>Пул свободных агентов (Клик — Архитектура)</h3>
+            <div class="player-pool-grid" id="player-pool" ondrop="Engine.handleDrop(event, 'pool')" ondragover="Engine.allowDrop(event)"></div>
         </div>
-
-        <div id="teams-container">
-            <!-- 8 команд генерируются JS -->
-        </div>
+        <div id="teams-container"></div>
     </div>
-    <button id="btn-start-tournament" onclick="startTournament()" style="font-size: 18px; padding: 15px;" disabled>Начать турнир</button>
+    <button id="btn-start-tournament" onclick="Engine.startTournament()" disabled>Инициализировать нейросети и запустить лигу</button>
 </div>
 
-<!-- ИГРОВОЙ ЭКРАН (МАТЧ) -->
 <div id="game-screen">
-    <div>
-        <canvas id="pitch" width="800" height="500"></canvas>
+    <div class="canvas-container">
+        <canvas id="pitch" width="850" height="500"></canvas>
         <div class="controls-panel">
-            <button id="btn-pause" onclick="togglePause()" disabled>Пауза</button>
-            <button id="btn-1x" onclick="setSpeed(1)" disabled>1x</button>
-            <button id="btn-2x" onclick="setSpeed(2)" disabled>2x</button>
-            <button id="btn-4x" onclick="setSpeed(4)" disabled>4x</button>
-            <button id="btn-next" onclick="startNextMatch()" style="background-color: #2196F3;" disabled>Следующий матч</button>
+            <button id="btn-pause" onclick="Engine.togglePause()" disabled>Пауза матрицы</button>
+            <button id="btn-1x" onclick="Engine.setSpeed(1)" disabled>1x</button>
+            <button id="btn-2x" onclick="Engine.setSpeed(2)" disabled>2x</button>
+            <button id="btn-5x" onclick="Engine.setSpeed(5)" disabled>5x</button>
+            <button id="btn-next" onclick="Engine.startNextMatch()">Запустить симуляцию</button>
         </div>
     </div>
 
     <div class="sidebar">
-        <h3>Управление сеткой</h3>
-        <div id="tournament-info">Турнир формируется...</div>
+        <h3>Состояние лиги</h3>
+        <div id="tournament-info">Заполните ростеры команд.</div>
 
-        <h3>Матч-статистика</h3>
-        <div class="stat-item"><span>Счет:</span> <span id="ui-score">0 - 0</span></div>
-        <div class="stat-item"><span>Время:</span> <span id="ui-time">00:00</span></div>
-        <div class="stat-item"><span>Владение:</span> <span id="ui-possession">50% - 50%</span></div>
-        <div class="stat-item"><span>Удары:</span> <span id="ui-shots">0 - 0</span></div>
+        <h3>Телеметрия матча</h3>
+        <div class="stat-item"><span>Счет генерации:</span> <b id="ui-score" style="color:var(--accent);">0 - 0</b></div>
+        <div class="stat-item"><span>Время симуляции:</span> <span id="ui-time">00:00</span></div>
+        <div class="stat-item"><span>Распределение контроля:</span> <span id="ui-possession">50% - 50%</span></div>
+        <div class="stat-item"><span>Зафиксировано ударов:</span> <span id="ui-shots">0 - 0</span></div>
 
-        <h3>Лог событий</h3>
+        <h3>Вывод терминала ИИ</h3>
         <div id="match-log"></div>
 
-        <h3>Топ-5 игроков по Эло</h3>
+        <h3>Топ нейросетей по рейтингу Эло</h3>
         <table id="top-players-table">
-            <tr><th>Игрок</th><th>Эло</th><th>Стиль</th></tr>
+            <tr><th>Агент</th><th>Эло</th><th>MSE Тренд</th></tr>
         </table>
     </div>
 </div>
 
-<!-- МОДАЛЬНОЕ ОКНО СТАТИСТИКИ -->
 <div id="stats-modal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 id="modal-name">Ник игрока</h2>
-            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2 id="modal-name" style="margin:0; font-size:20px; color:var(--accent);">Агент</h2>
+            <span class="close-btn" onclick="Engine.closeModal()">&times;</span>
         </div>
-        <div class="stat-group">
-            <strong>Рейтинг Эло:</strong> <span id="modal-elo">1000</span>
+        <p><strong>Текущий Эло-Ранг:</strong> <span id="modal-elo" style="color:#ffcc00">1000</span></p>
+        
+        <div style="font-size:12px; margin-top:10px;">
+            <div>Врожденная скорость: <span id="lbl-spd"></span></div>
+            <div>Точность распределения (Пас): <span id="lbl-pas"></span></div>
+            <div>Кинетическая сила (Удар): <span id="lbl-sht"></span></div>
         </div>
-        <div class="stat-group">
-            <strong>Текущая роль на поле:</strong> <span id="modal-role">-</span>
+
+        <h4 style="margin:15px 0 5px 0; text-transform:uppercase; font-size:12px; color:var(--text-muted);">Архитектура графа связей:</h4>
+        <div class="nn-visualizer">
+            <div class="nn-layer" id="lyr-in"></div>
+            <div class="nn-layer" id="lyr-hid"></div>
+            <div class="nn-layer" id="lyr-out"></div>
         </div>
-        <div class="stat-group">
-            <div style="display:flex; justify-content:space-between;"><span>Атака / Агрессия:</span><span id="txt-agg">50%</span></div>
-            <div class="progress-bar"><div id="bar-agg" class="progress-fill"></div></div>
+        <div style="font-size:10px; color:var(--text-muted); text-align:center; margin-top:4px;">
+            Входы [6] -> Скрытый слой [8 ReLU] -> Выходы [3 Softmax]
         </div>
-        <div class="stat-group">
-            <div style="display:flex; justify-content:space-between;"><span>Оборона / Защита:</span><span id="txt-def">50%</span></div>
-            <div class="progress-bar"><div id="bar-def" class="progress-fill"></div></div>
-        </div>
-        <div class="stat-group">
-            <div style="display:flex; justify-content:space-between;"><span>Склонность к пасу:</span><span id="txt-pass">50%</span></div>
-            <div class="progress-bar"><div id="bar-pass" class="progress-fill"></div></div>
-        </div>
-        <div class="stat-group" style="margin-top: 15px; border-top: 1px solid #444; padding-top: 10px;">
-            <strong>Развитие карьеры:</strong>
-            <div style="font-size: 13px; margin-top: 5px;">
-                Матчей: <span id="modal-matches">0</span> | Голов: <span id="modal-goals">0</span> | Пасов: <span id="modal-assists">0</span>
-            </div>
+
+        <div style="margin-top:15px; border-top:1px solid var(--border); padding-top:10px; font-size:12px; display:flex; justify-content:space-between;">
+            <span>Сыграно циклов: <b id="m-m">0</b></span>
+            <span>Голы: <b id="m-g" style="color:var(--accent)">0</b></span>
         </div>
     </div>
 </div>
 
 <script>
-    // --- ИГРОВЫЕ ДАННЫЕ И ЦВЕТА ---
-    const NAMES = [
-        "Торнадо", "Снайпер", "Танк", "Молния", "Стенка", "Хаос", "Стиг", "Феникс",
-        "Блиц", "Кипер", "Титан", "Пуля", "Искра", "Гром", "Тень", "Магнит",
-        "Айс", "Комета", "Вихрь", "Спартанец", "Шторм", "Динамо", "Броня", "Крок",
-        "Фокс", "Лев", "Волк", "Пантера", "Ястреб", "Медведь", "Скорпион", "Цунами",
-        "Пилот", "Рекс", "Метеор", "Барс", "Кент", "Призрак", "Огонь", "Кристалл"
-    ];
+    // --- МАТЕМАТИЧЕСКИЙ ХАРДКОР: ПОЛНОСВЯЗНАЯ НЕЙРОСЕТЬ С BACKPROPAGATION ---
+    class NeuralNetwork {
+        constructor(inputDim, hiddenDim, outputDim) {
+            this.inputDim = inputDim;
+            this.hiddenDim = hiddenDim;
+            this.outputDim = outputDim;
 
-    const TEAM_COLORS = [
-        "#ff3b30", // Красный
-        "#007aff", // Синий
-        "#34c759", // Зеленый
-        "#ffcc00", // Желтый
-        "#ff9500", // Оранжевый
-        "#af52de", // Пурпурный
-        "#5ac8fa", // Циановый
-        "#ff2d55" // Розовый
-    ];
+            // Хе-Инициализация весов для стабильного старта ReLU
+            this.w1 = Array.from({length: hiddenDim}, () => 
+                Array.from({length: inputDim}, () => (Math.random() * 2 - 1) * Math.sqrt(2 / inputDim))
+            );
+            this.b1 = new Array(hiddenDim).fill(0);
 
-    let players = [];
-    let teams = [];
-    let tournamentBracket = [];
-    let currentRoundIdx = 0;
-    let currentMatchInRound = 0;
-    let matchActive = false;
-    let gameSpeed = 1;
-    let isPaused = false;
-
-    // Инициализация / Загрузка ботов
-    function loadPlayers() {
-        let saved = localStorage.getItem('football_bots_elo_v2');
-        if (saved) {
-            try { players = JSON.parse(saved); } catch(e) { players = []; }
-        }
-        if (players.length !== 40) {
-            players = NAMES.map((name, i) => ({
-                id: i,
-                name: name,
-                elo: 1000,
-                aggression: Math.random() * 0.5 + 0.3,
-                passing: Math.random() * 0.5 + 0.3,
-                defense: Math.random() * 0.5 + 0.3,
-                role: 'Универсал',
-                goals: 0,
-                assists: 0,
-                matchesPlayed: 0
-            }));
-            savePlayers();
-        }
-        buildDraftMenu();
-        updateTopTable();
-    }
-
-    function savePlayers() {
-        localStorage.setItem('football_bots_elo_v2', JSON.stringify(players));
-        updateTopTable();
-    }
-
-    // --- ИНТЕРФЕЙС ДРАФТА И ПЕРЕТАСКИВАНИЯ ---
-    function buildDraftMenu() {
-        // Создаем пул игроков
-        const poolEl = document.getElementById('player-pool');
-        poolEl.innerHTML = '';
-        players.forEach(p => {
-            let chip = document.createElement('div');
-            chip.className = 'player-chip';
-            chip.id = `player-${p.id}`;
-            chip.draggable = true;
-            chip.innerText = p.name;
-            chip.ondragstart = drag;
-            chip.onclick = (e) => { e.stopPropagation(); openStats(p.id); };
-            poolEl.appendChild(chip);
-        });
-
-        // Создаем 8 команд
-        const teamsContainer = document.getElementById('teams-container');
-        teamsContainer.innerHTML = '';
-        teams = [];
-        for (let i = 0; i < 8; i++) {
-            teams.push({
-                id: i,
-                name: `Команда ${i+1}`,
-                color: TEAM_COLORS[i],
-                playerIds: []
-            });
-
-            let tBox = document.createElement('div');
-            tBox.className = 'team-box';
-            tBox.style.borderTopColor = TEAM_COLORS[i];
-            tBox.innerHTML = `
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                    <strong style="color:${TEAM_COLORS[i]}">Команда ${i+1}</strong>
-                    <span id="count-${i}" style="font-size:12px;">0 / 5</span>
-                </div>
-                <div class="team-slots" id="team-slot-${i}" ondrop="drop(event, ${i})" ondragover="allowDrop(event)"></div>
-            `;
-            teamsContainer.appendChild(tBox);
-        }
-    }
-
-    function allowDrop(ev) { ev.preventDefault(); }
-    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
-
-    function drop(ev, target) {
-        ev.preventDefault();
-        let data = ev.dataTransfer.getData("text");
-        let playerEl = document.getElementById(data);
-        let playerId = parseInt(data.replace('player-', ''));
-
-        // Находим, откуда пришел игрок
-        let originTeamIdx = teams.findIndex(t => t.playerIds.includes(playerId));
-
-        if (target === 'pool') {
-            // Возвращаем в пул свободный агентов
-            if (originTeamIdx !== -1) {
-                teams[originTeamIdx].playerIds = teams[originTeamIdx].playerIds.filter(id => id !== playerId);
-                document.getElementById(`count-${originTeamIdx}`).innerText = `${teams[originTeamIdx].playerIds.length} / 5`;
-            }
-            document.getElementById('player-pool').appendChild(playerEl);
-        } else {
-            // Перетаскиваем в команду
-            let targetTeam = teams[target];
-            if (targetTeam.playerIds.length >= 5) {
-                alert("В команде не может быть больше 5 игроков!");
-                return;
-            }
-
-            // Удаляем из старой команды, если был там
-            if (originTeamIdx !== -1) {
-                teams[originTeamIdx].playerIds = teams[originTeamIdx].playerIds.filter(id => id !== playerId);
-                document.getElementById(`count-${originTeamIdx}`).innerText = `${teams[originTeamIdx].playerIds.length} / 5`;
-            }
-
-            targetTeam.playerIds.push(playerId);
-            document.getElementById(`team-slot-${target}`).appendChild(playerEl);
-            document.getElementById(`count-${target}`).innerText = `${targetTeam.playerIds.length} / 5`;
+            this.w2 = Array.from({length: outputDim}, () => 
+                Array.from({length: hiddenDim}, () => (Math.random() * 2 - 1) * Math.sqrt(2 / hiddenDim))
+            );
+            this.b2 = new Array(outputDim).fill(0);
+            
+            this.lastInputs = null;
+            this.lastHidden = null;
+            this.lastOutputs = null;
         }
 
-        checkTournamentReady();
-    }
-
-    function checkTournamentReady() {
-        let allReady = teams.every(t => t.playerIds.length === 5);
-        document.getElementById('btn-start-tournament').disabled = !allReady;
-    }
-
-    // --- ОКНО СТАТИСТИКИ ---
-    function openStats(id) {
-        let p = players.find(x => x.id === id);
-        document.getElementById('modal-name').innerText = p.name;
-        document.getElementById('modal-elo').innerText = Math.round(p.elo);
-        document.getElementById('modal-role').innerText = p.role;
-        
-        document.getElementById('txt-agg').innerText = `${Math.round(p.aggression * 100)}%`;
-        document.getElementById('bar-agg').style.width = `${p.aggression * 100}%`;
-
-        document.getElementById('txt-def').innerText = `${Math.round(p.defense * 100)}%`;
-        document.getElementById('bar-def').style.width = `${p.defense * 100}%`;
-
-        document.getElementById('txt-pass').innerText = `${Math.round(p.passing * 100)}%`;
-        document.getElementById('bar-pass').style.width = `${p.passing * 100}%`;
-
-        document.getElementById('modal-matches').innerText = p.matchesPlayed || 0;
-        document.getElementById('modal-goals').innerText = p.goals;
-        document.getElementById('modal-assists').innerText = p.assists;
-
-        document.getElementById('stats-modal').style.display = 'flex';
-    }
-
-    function closeModal() {
-        document.getElementById('stats-modal').style.display = 'none';
-    }
-
-    // --- ИНИЦИАЛИЗАЦИЯ СЕТКИ ТУРНИРА ---
-    function startTournament() {
-        // Заменяем id игроков на полноценные объекты для удобства турнира
-        teams.forEach(t => {
-            t.players = t.playerIds.map(id => players.find(p => p.id === id));
-        });
-
-        document.getElementById('setup-menu').style.display = 'none';
-        document.getElementById('game-screen').style.display = 'flex';
-
-        tournamentBracket = [
-            { round: '1/4 финала', matches: [[0,1], [2,3], [4,5], [6,7]], winners: [] },
-            { round: 'Полуфинал', matches: [[0,1], [2,3]], winners: [] },
-            { round: 'Финал', matches: [[0,1]], winners: [] }
-        ];
-        currentRoundIdx = 0;
-        currentMatchInRound = 0;
-
-        document.getElementById('btn-next').disabled = false;
-        logMessage("Турнирная сетка сформирована. Матчи готовы к запуску!");
-        updateTournamentInfo();
-    }
-
-    function updateTournamentInfo() {
-        if (currentRoundIdx >= tournamentBracket.length) {
-            document.getElementById('tournament-info').innerHTML = `<b>Турнир завершен!</b>`;
-            document.getElementById('btn-next').disabled = true;
-            return;
-        }
-        let round = tournamentBracket[currentRoundIdx];
-        document.getElementById('tournament-info').innerHTML = `
-            <b>Раунд:</b> ${round.round}<br>
-            Матч ${currentMatchInRound + 1} из ${round.matches.length}
-        `;
-    }
-
-    // --- СИМУЛЯЦИЯ МАТЧА НА CANVAS ---
-    const canvas = document.getElementById('pitch');
-    const ctx = canvas.getContext('2d');
-    let matchState = null;
-
-    function startNextMatch() {
-        let round = tournamentBracket[currentRoundIdx];
-        if (!round || currentMatchInRound >= round.matches.length) {
-            currentRoundIdx++;
-            currentMatchInRound = 0;
-            round = tournamentBracket[currentRoundIdx];
-            if (currentRoundIdx >= tournamentBracket.length) {
-                updateTournamentInfo();
-                return;
-            }
-        }
-
-        let pair = round.matches[currentMatchInRound];
-        let teamA, teamB;
-
-        if (currentRoundIdx === 0) {
-            teamA = teams[pair[0]];
-            teamB = teams[pair[1]];
-        } else {
-            let prevWinners = tournamentBracket[currentRoundIdx - 1].winners;
-            teamA = prevWinners[pair[0]];
-            teamB = prevWinners[pair[1]];
-        }
-
-        setupMatch(teamA, teamB);
-    }
-
-    function setupMatch(teamA, teamB) {
-        matchActive = true;
-        isPaused = false;
-        document.getElementById('btn-pause').disabled = false;
-        document.getElementById('btn-1x').disabled = false;
-        document.getElementById('btn-2x').disabled = false;
-        document.getElementById('btn-4x').disabled = false;
-        document.getElementById('btn-next').disabled = true;
-
-        matchState = {
-            teamA: teamA,
-            teamB: teamB,
-            scoreA: 0,
-            scoreB: 0,
-            time: 0,
-            maxTime: 90,
-            ball: { x: 400, y: 250, vx: 0, vy: 0, holder: null },
-            stats: { possessionA: 0, possessionB: 0, shotsA: 0, shotsB: 0 },
-            players: []
-        };
-
-        // Запуск игроков на поле
-        teamA.players.forEach((p, idx) => {
-            p.matchesPlayed = (p.matchesPlayed || 0) + 1;
-            matchState.players.push({
-                data: p, team: 'A',
-                x: 120 + (idx === 0 ? 0 : Math.random() * 80),
-                y: 80 + idx * 80,
-                radius: 13, color: teamA.color
-            });
-        });
-
-        teamB.players.forEach((p, idx) => {
-            p.matchesPlayed = (p.matchesPlayed || 0) + 1;
-            matchState.players.push({
-                data: p, team: 'B',
-                x: 680 - (idx === 0 ? 0 : Math.random() * 80),
-                y: 80 + idx * 80,
-                radius: 13, color: teamB.color
-            });
-        });
-
-        logMessage(`Матч: ${teamA.name} vs ${teamB.name}`);
-        lastTick = Date.now();
-        requestAnimationFrame(gameLoop);
-    }
-
-    let lastTick = Date.now();
-    function gameLoop() {
-        if (!matchActive) return;
-
-        let now = Date.now();
-        if (!isPaused) {
-            for (let s = 0; s < gameSpeed; s++) {
-                updatePhysics(0.016);
-            }
-        }
-        drawPitch();
-
-        if (matchState.time < matchState.maxTime && matchActive) {
-            requestAnimationFrame(gameLoop);
-        } else if (matchActive) {
-            endMatch();
-        }
-    }
-
-    function updatePhysics(dt) {
-        matchState.time += dt * 0.4;
-        let mins = Math.floor((matchState.time / matchState.maxTime) * 90);
-        document.getElementById('ui-time').innerText = `${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
-
-        if (matchState.ball.holder) {
-            if (matchState.ball.holder.team === 'A') matchState.stats.possessionA++;
-            else matchState.stats.possessionB++;
-        }
-        let totalP = matchState.stats.possessionA + matchState.stats.possessionB || 1;
-        document.getElementById('ui-possession').innerText = `${Math.round(matchState.stats.possessionA/totalP*100)}% - ${Math.round(matchState.stats.possessionB/totalP*100)}%`;
-
-        // Роли
-        if (matchState.time < 3) {
-            matchState.players.forEach(p => {
-                if (p.team === 'A') {
-                    p.data.role = p.x < 150 ? 'Вратарь' : (p.x < 300 ? 'Защитник' : 'Нападающий');
-                } else {
-                    p.data.role = p.x > 650 ? 'Вратарь' : (p.x > 500 ? 'Защитник' : 'Нападающий');
+        forward(inputs) {
+            this.lastInputs = [...inputs];
+            
+            // Скрытый слой + активация ReLU
+            this.lastHidden = new Array(this.hiddenDim);
+            for (let i = 0; i < this.hiddenDim; i++) {
+                let sum = this.b1[i];
+                for (let j = 0; j < this.inputDim; j++) {
+                    sum += inputs[j] * this.w1[i][j];
                 }
-            });
+                this.lastHidden[i] = Math.max(0, sum);
+            }
+
+            // Выходной слой (логиты)
+            let logits = new Array(this.outputDim);
+            for (let i = 0; i < this.outputDim; i++) {
+                let sum = this.b2[i];
+                for (let j = 0; j < this.hiddenDim; j++) {
+                    sum += this.lastHidden[j] * this.w2[i][j];
+                }
+                logits[i] = sum;
+            }
+
+            // Активация Softmax для перевода логитов в вероятности действий
+            let maxLogit = Math.max(...logits);
+            let exps = logits.map(l => Math.exp(l - maxLogit));
+            let sumExps = exps.reduce((a, b) => a + b, 0);
+            this.lastOutputs = exps.map(e => e / sumExps);
+
+            return this.lastOutputs;
         }
 
-        let ball = matchState.ball;
+        // Обучение методом Policy Gradient (Упрощенный алгоритм REINFORCE)
+        reinforce(actionIdx, reward, lr = 0.06) {
+            if (!this.lastInputs) return;
 
-        matchState.players.forEach(p => {
-            let targetX = ball.x;
-            let targetY = ball.y;
+            // Вычисление градиента для выходного слоя (Softmax + Cross-Entropy Loss)
+            let dLogits = [...this.lastOutputs];
+            dLogits[actionIdx] -= 1.0; 
+            dLogits = dLogits.map(d => d * -reward); 
 
-            if (p.data.role === 'Вратарь') {
-                targetX = p.team === 'A' ? 45 : 755;
-                targetY = Math.max(190, Math.min(310, ball.y));
-            } else {
-                let isOurBall = ball.holder && ball.holder.team === p.team;
-                if (!isOurBall) {
-                    targetX = ball.x - (p.team === 'A' ? 20 : -20);
-                } else {
-                    targetX = ball.x + (p.team === 'A' ? 40 : -40);
+            // Обновление весов выходного слоя w2 и смещений b2
+            for (let i = 0; i < this.outputDim; i++) {
+                this.b2[i] -= lr * dLogits[i];
+                for (let j = 0; j < this.hiddenDim; j++) {
+                    this.w2[i][j] -= lr * dLogits[i] * this.lastHidden[j];
                 }
             }
 
-            let angle = Math.atan2(targetY - p.y, targetX - p.x);
-            let speed = 2.0 + (p.data.elo - 1000) / 600;
-            p.x += Math.cos(angle) * Math.max(1.4, speed);
-            p.y += Math.sin(angle) * Math.max(1.4, speed);
-
-            // Границы поля
-            p.x = Math.max(25, Math.min(775, p.x));
-            p.y = Math.max(25, Math.min(475, p.y));
-
-            // Подбор мяча
-            let d = Math.hypot(p.x - ball.x, p.y - ball.y);
-            if (d < p.radius + 8 && !ball.holder) {
-                ball.holder = p;
-            }
-        });
-
-        // Физика мяча
-        if (ball.holder) {
-            ball.x = ball.holder.x + (ball.holder.team === 'A' ? 14 : -14);
-            ball.y = ball.holder.y;
-
-            let gX = ball.holder.team === 'A' ? 775 : 25;
-            let distG = Math.abs(gX - ball.holder.x);
-
-            if (distG < 220 && Math.random() < 0.04) {
-                // Удар
-                let power = 9;
-                let tY = 250 + (Math.random() * 80 - 40);
-                let angle = Math.atan2(tY - ball.y, gX - ball.x);
-                ball.vx = Math.cos(angle) * power;
-                ball.vy = Math.sin(angle) * power;
-
-                if (ball.holder.team === 'A') matchState.stats.shotsA++;
-                else matchState.stats.shotsB++;
-
-                logMessage(`${ball.holder.data.name} наносит удар!`);
-                ball.holder = null;
-            }
-        } else {
-            ball.x += ball.vx;
-            ball.y += ball.vy;
-            ball.vx *= 0.97;
-            ball.vy *= 0.97;
-
-            // Голы
-            if (ball.x <= 30 && ball.y > 180 && ball.y < 320) {
-                matchState.scoreB++;
-                onGoal('B');
-            } else if (ball.x >= 770 && ball.y > 180 && ball.y < 320) {
-                matchState.scoreA++;
-                onGoal('A');
+            // Обратное распространение ошибки на скрытый слой сквозь производную ReLU
+            let dHidden = new Array(this.hiddenDim).fill(0);
+            for (let j = 0; j < this.hiddenDim; j++) {
+                let error = 0;
+                for (let i = 0; i < this.outputDim; i++) {
+                    error += dLogits[i] * this.w2[i][j];
+                }
+                dHidden[j] = this.lastHidden[j] > 0 ? error : 0; 
             }
 
-            // Борта
-            if (ball.y <= 22 || ball.y >= 478) ball.vy *= -1;
-            if (ball.x <= 22 || ball.x >= 778) {
-                if (!(ball.y > 180 && ball.y < 320)) ball.vx *= -1;
+            // Обновление весов скрытого слоя w1 и смещений b1
+            for (let i = 0; i < this.hiddenDim; i++) {
+                this.b1[i] -= lr * dHidden[i];
+                for (let j = 0; j < this.inputDim; j++) {
+                    this.w1[i][j] -= lr * dHidden[i] * this.lastInputs[j];
+                }
             }
         }
 
-        document.getElementById('ui-score').innerText = `${matchState.scoreA} - ${matchState.scoreB}`;
-        document.getElementById('ui-shots').innerText = `${matchState.stats.shotsA} - ${matchState.stats.shotsB}`;
+        static fromJSON(json) {
+            let nn = new NeuralNetwork(json.inputDim, json.hiddenDim, json.outputDim);
+            nn.w1 = json.w1; nn.b1 = json.b1;
+            nn.w2 = json.w2; nn.b2 = json.b2;
+            return nn;
+        }
     }
 
-    function onGoal(scoringTeam) {
-        logMessage(`ГОЛ! Отличилась ${scoringTeam === 'A' ? matchState.teamA.name : matchState.teamB.name}`);
-        
-        // Даем гол автору удара или случайному игроку атаки
-        let teamPlayers = scoringTeam === 'A' ? matchState.teamA.players : matchState.teamB.players;
-        let scorer = teamPlayers[Math.floor(Math.random() * teamPlayers.length)];
-        scorer.goals++;
+    // --- СТРУКТУРА ДАННЫХ АГЕНТА И ЕГО ПАРАМЕТРОВ ---
+    class Bot {
+        constructor(id, name, savedData = null) {
+            this.id = id;
+            this.name = name;
+            this.elo = savedData?.elo || 1000;
+            
+            this.speed = savedData?.speed || (0.8 + Math.random() * 0.5);
+            this.passAccuracy = savedData?.passAccuracy || (0.6 + Math.random() * 0.4);
+            this.shotPower = savedData?.shotPower || (0.6 + Math.random() * 0.4);
 
-        matchState.ball = { x: 400, y: 250, vx: 0, vy: 0, holder: null };
+            this.matchesPlayed = savedData?.matchesPlayed || 0;
+            this.goals = savedData?.goals || 0;
 
-        // Эволюция стилей при голе
-        matchState.players.forEach(p => {
-            if (p.team !== scoringTeam) {
-                p.data.defense = Math.min(1.0, p.data.defense + 0.04);
-                p.data.aggression = Math.max(0.1, p.data.aggression - 0.04);
-            } else {
-                p.data.aggression = Math.min(1.0, p.data.aggression + 0.03);
+            this.brain = savedData?.brain ? NeuralNetwork.fromJSON(savedData.brain) : new NeuralNetwork(6, 8, 3);
+            this.lastAction = 0;
+        }
+
+        decideAction(inputs) {
+            let probs = this.brain.forward(inputs);
+            let r = Math.random();
+            if (r < probs[0]) { this.lastAction = 0; return 'pass'; }
+            if (r < probs[0] + probs[1]) { this.lastAction = 1; return 'shoot'; }
+            this.lastAction = 2;
+            return 'dribble';
+        }
+
+        toJSON() {
+            return {
+                id: this.id, name: this.name, elo: this.elo,
+                speed: this.speed, passAccuracy: this.passAccuracy, shotPower: this.shotPower,
+                matchesPlayed: this.matchesPlayed, goals: this.goals,
+                brain: {
+                    inputDim: this.brain.inputDim, hiddenDim: this.brain.hiddenDim, outputDim: this.brain.outputDim,
+                    w1: this.brain.w1, b1: this.brain.b1, w2: this.brain.w2, b2: this.brain.b2
+                }
+            };
+        }
+    }
+
+    // --- ВИЗУАЛЬНЫЙ СОУС: СИСТЕМА ГРАФИЧЕСКИХ ЧАСТИЦ (JUICE) ---
+    class ParticleSystem {
+        constructor() { this.particles = []; }
+        spawn(x, y, color, count = 10, speed = 3) {
+            for (let i = 0; i < count; i++) {
+                let angle = Math.random() * Math.PI * 2;
+                let s = Math.random() * speed + 1;
+                this.particles.push({
+                    x: x, y: y,
+                    vx: Math.cos(angle) * s,
+                    vy: Math.sin(angle) * s,
+                    life: 1.0, decay: 0.02 + Math.random() * 0.03,
+                    color: color, size: Math.random() * 3 + 1
+                });
             }
-        });
+        }
+        update() {
+            for (let i = this.particles.length - 1; i >= 0; i--) {
+                let p = this.particles[i];
+                p.x += p.vx; p.y += p.vy;
+                p.life -= p.decay;
+                if (p.life <= 0) this.particles.splice(i, 1);
+            }
+        }
+        draw(ctx) {
+            ctx.save();
+            this.particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.restore();
+        }
     }
 
-    // РИСОВАНИЕ КЛАССИЧЕСКОГО ФУТБОЛЬНОГО МЯЧА И ПОЛЯ
-    function drawPitch() {
-        ctx.clearRect(0, 0, 800, 500);
-        ctx.strokeStyle = "rgba(255,255,255,0.4)";
-        ctx.lineWidth = 3;
+    // --- ОКРУЖЕНИЕ: КОМАНДЫ И ФИЗИКА МЯЧА ---
+    class Team {
+        constructor(id, name, color) {
+            this.id = id; this.name = name; this.color = color;
+            this.playerIds = []; this.bots = [];
+        }
+    }
 
-        // Поле
-        ctx.strokeRect(20, 20, 760, 460);
-        ctx.beginPath();
-        ctx.moveTo(400, 20); ctx.lineTo(400, 480);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(400, 250, 70, 0, Math.PI * 2);
-        ctx.stroke();
+    class Ball {
+        constructor() {
+            this.x = 425; this.y = 250; this.vx = 0; this.vy = 0;
+            this.radius = 7; this.holder = null; this.lastHolder = null;
+            this.history = []; 
+        }
+        reset() {
+            this.x = 425; this.y = 250; this.vx = 0; this.vy = 0;
+            this.holder = null; this.lastHolder = null; this.history = [];
+        }
+        updatePhysics() {
+            if (this.holder) {
+                this.x = this.holder.x + (this.holder.team === 'A' ? 12 : -12);
+                this.y = this.holder.y;
+                this.vx = 0; this.vy = 0;
+            } else {
+                this.x += this.vx; this.y += this.vy;
+                this.vx *= 0.985; this.vy *= 0.985; // Сила трения о газон
+            }
+            this.history.push({x: this.x, y: this.y});
+            if (this.history.length > 8) this.history.shift();
+        }
+    }
 
-        ctx.strokeRect(20, 160, 40, 180);
-        ctx.strokeRect(740, 160, 40, 180);
+    // --- ГЛАВНЫЙ МЕНЕДЖЕР СИМУЛЯЦИИ МАТЧА ---
+    class Match {
+        constructor(teamA, teamB) {
+            this.teamA = teamA; this.teamB = teamB;
+            this.scoreA = 0; this.scoreB = 0;
+            this.time = 0; this.maxTime = 90;
+            this.ball = new Ball();
+            this.players = [];
+            this.pSystem = new ParticleSystem();
+            
+            this.stats = { possessionA: 0, possessionB: 0, shotsA: 0, shotsB: 0 };
+            this.lastActionType = null;
+            this.rewardChain = []; 
 
-        // Боты
-        matchState.players.forEach(p => {
-            ctx.fillStyle = p.color;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-            ctx.fill();
+            this.spawnPlayers();
+        }
+
+        spawnPlayers() {
+            this.teamA.bots.forEach((bot, idx) => {
+                bot.matchesPlayed++;
+                this.players.push({
+                    bot: bot, team: 'A',
+                    x: 150 + (idx === 0 ? -50 : Math.random() * 40),
+                    y: 60 + idx * 95,
+                    stamina: 100, color: this.teamA.color, radius: 12
+                });
+            });
+            this.teamB.bots.forEach((bot, idx) => {
+                bot.matchesPlayed++;
+                this.players.push({
+                    bot: bot, team: 'B',
+                    x: 700 - (idx === 0 ? -50 : Math.random() * 40),
+                    y: 60 + idx * 95,
+                    stamina: 100, color: this.teamB.color, radius: 12
+                });
+            });
+        }
+
+        update(dt) {
+            this.time += dt * 0.5;
+            this.ball.updatePhysics();
+            this.pSystem.update();
+
+            let ball = this.ball;
+
+            if (ball.holder) {
+                if (ball.holder.team === 'A') this.stats.possessionA++; 
+                else this.stats.possessionB++;
+            }
+
+            // 1. Цикл принятия тактических решений ИИ и перемещение
+            this.players.forEach((p, idx) => {
+                p.stamina = Math.max(20, p.stamina - dt * 0.08);
+
+                let goalX = p.team === 'A' ? 825 : 25;
+                let inputs = [
+                    p.x / 850, p.y / 500,
+                    ball.x / 850, ball.y / 500,
+                    Math.abs(goalX - p.x) / 850,
+                    p.stamina / 100
+                ];
+
+                let isHolder = (ball.holder === p);
+                
+                let tx = ball.x, ty = ball.y;
+                if (isHolder) {
+                    tx = p.team === 'A' ? 825 : 25;
+                    ty = 250;
+                } else {
+                    // Базовое позиционирование вратарей (индексы 0 для команды А, 5 для команды В)
+                    if (p.team === 'A' && idx === 0) {
+                        tx = 40; ty = Math.max(180, Math.min(320, ball.y));
+                    } else if (p.team === 'B' && idx === 5) {
+                        tx = 810; ty = Math.max(180, Math.min(320, ball.y));
+                    }
+                }
+
+                let angle = Math.atan2(ty - p.y, tx - p.x);
+                let speed = (2.0 + (p.bot.elo - 1000)/800) * p.bot.speed * (p.stamina/100);
+                p.x += Math.cos(angle) * Math.max(1.0, speed);
+                p.y += Math.sin(angle) * Math.max(1.0, speed);
+                
+                p.x = Math.max(20, Math.min(830, p.x));
+                p.y = Math.max(20, Math.min(480, p.y));
+
+                if (Math.random() < 0.04) this.pSystem.spawn(p.x, p.y, '#1b3b22', 2, 0.5);
+
+                if (isHolder && Math.random() < 0.15) {
+                    let action = p.bot.decideAction(inputs);
+                    this.rewardChain.push({ bot: p.bot, actionIdx: p.bot.lastAction, stepTime: this.time });
+
+                    if (action === 'shoot') {
+                        let power = 13 * p.bot.shotPower;
+                        let targetY = 220 + Math.random() * 60;
+                        let a = Math.atan2(targetY - ball.y, goalX - ball.x);
+                        ball.vx = Math.cos(a) * power;
+                        ball.vy = Math.sin(a) * power;
+                        ball.holder = null;
+                        ball.lastHolder = p;
+                        this.lastActionType = 'shoot';
+                        if (p.team === 'A') this.stats.shotsA++; else this.stats.shotsB++;
+                        this.pSystem.spawn(ball.x, ball.y, '#ffffff', 8, 4);
+                    } else if (action === 'pass') {
+                        let mates = this.players.filter(m => m.team === p.team && m !== p);
+                        let target = mates[Math.floor(Math.random() * mates.length)];
+                        if (target) {
+                            let a = Math.atan2(target.y - ball.y, target.x - ball.x);
+                            let d = Math.hypot(target.x - ball.x, target.y - ball.y);
+                            ball.vx = Math.cos(a) * Math.max(5, d / 18);
+                            ball.vy = Math.sin(a) * Math.max(5, d / 18);
+                            ball.holder = null;
+                            ball.lastHolder = p;
+                            this.lastActionType = 'pass';
+                        }
+                    } else {
+                        p.x += p.team === 'A' ? 2 : -2;
+                    }
+                }
+
+                let distBall = Math.hypot(p.x - ball.x, p.y - ball.y);
+                if (distBall < p.radius + 6 && !ball.holder) {
+                    if (this.lastActionType === 'pass' && ball.lastHolder) {
+                        if (ball.lastHolder.team === p.team) {
+                            ball.lastHolder.bot.brain.reinforce(0, 0.2); 
+                        } else {
+                            ball.lastHolder.bot.brain.reinforce(0, -0.3); 
+                        }
+                    }
+                    ball.holder = p;
+                    ball.lastHolder = p;
+                    this.lastActionType = null;
+                }
+            });
+
+            // 2. ДВИЖОК ТВЕРДЫХ ТЕЛ: Разрешение взаимных коллизий (Circle-Circle Resolution)
+            for (let i = 0; i < this.players.length; i++) {
+                for (let j = i + 1; j < this.players.length; j++) {
+                    let p1 = this.players[i];
+                    let p2 = this.players[j];
+
+                    let dx = p2.x - p1.x;
+                    let dy = p2.y - p1.y;
+                    let dist = Math.hypot(dx, dy);
+                    let minDist = p1.radius + p2.radius; 
+
+                    if (dist < minDist) {
+                        if (dist === 0) {
+                            dx = Math.random() - 0.5;
+                            dy = Math.random() - 0.5;
+                            dist = Math.hypot(dx, dy);
+                        }
+
+                        let overlap = minDist - dist;
+                        let nx = dx / dist; 
+                        let ny = dy / dist;
+
+                        // Расталкивание по нормали столкновения во избежание накладывания текстур
+                        p1.x -= nx * overlap * 0.5;
+                        p1.y -= ny * overlap * 0.5;
+                        p2.x += nx * overlap * 0.5;
+                        p2.y += ny * overlap * 0.5;
+
+                        p1.x = Math.max(20, Math.min(830, p1.x));
+                        p1.y = Math.max(20, Math.min(480, p1.y));
+                        p2.x = Math.max(20, Math.min(830, p2.x));
+                        p2.y = Math.max(20, Math.min(480, p2.y));
+                    }
+                }
+            }
+
+            // 3. Обработка триггеров поля и сетки ворот
+            if (ball.y <= 20 || ball.y >= 480) ball.vy *= -1;
+            if (ball.x <= 20 || ball.x >= 830) {
+                if (ball.y > 180 && ball.y < 320) {
+                    let scoreTeam = ball.x > 400 ? 'A' : 'B';
+                    if (scoreTeam === 'A') this.scoreA++; else this.scoreB++;
+                    this.processGoalReward(scoreTeam);
+                } else {
+                    ball.vx *= -1;
+                }
+            }
+        }
+
+        processGoalReward(winningTeamChar) {
+            Engine.log(`МАТРИЦА: Зафиксировано взятие ворот командой ${winningTeamChar}!`);
+            this.pSystem.spawn(this.ball.x, this.ball.y, '#ffff00', 40, 7);
+
+            this.rewardChain.forEach(entry => {
+                let matchPlayer = this.players.find(p => p.bot === entry.bot);
+                if (matchPlayer.team === winningTeamChar) {
+                    entry.bot.brain.reinforce(entry.actionIdx, 0.5); 
+                    if (this.lastActionType === 'shoot') entry.bot.goals++;
+                } else {
+                    entry.bot.brain.reinforce(entry.actionIdx, -0.4); 
+                }
+            });
+            this.rewardChain = [];
+            this.ball.reset();
+        }
+
+        draw(ctx) {
+            // Фон кибер-поля
+            ctx.fillStyle = "#0c0d14";
+            ctx.fillRect(0,0,850,500);
+
+            // Отрисовка фоновой сетки
+            ctx.strokeStyle = "rgba(0, 255, 102, 0.03)";
+            ctx.lineWidth = 1;
+            for(let i=20; i<850; i+=40) { ctx.beginPath(); ctx.moveTo(i,20); ctx.lineTo(i,480); ctx.stroke(); }
+
+            // Неоновые элементы разметки газона
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = "var(--accent-glow)";
+            ctx.strokeStyle = "rgba(0, 255, 102, 0.2)";
             ctx.lineWidth = 2;
-            ctx.strokeStyle = "#ffffff";
-            ctx.stroke();
+            ctx.strokeRect(20, 20, 810, 460);
+            ctx.beginPath(); ctx.arc(425, 250, 70, 0, Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(425, 20); ctx.lineTo(425, 480); ctx.stroke();
 
+            // Светодиодные штанги ворот
+            ctx.strokeStyle = "#ff0055"; ctx.strokeRect(10, 180, 10, 140);
+            ctx.strokeStyle = "#00ff66"; ctx.strokeRect(830, 180, 10, 140);
+            ctx.shadowBlur = 0;
+
+            // Отрисовка Motion Blur шлейфа мяча
+            ctx.save();
+            this.ball.history.forEach((pos, idx) => {
+                ctx.globalAlpha = (idx / this.ball.history.length) * 0.25;
+                ctx.fillStyle = "#fff";
+                ctx.beginPath(); ctx.arc(pos.x, pos.y, this.ball.radius * 0.8, 0, Math.PI*2); ctx.fill();
+            });
+            ctx.restore();
+
+            // Отрисовка мяча
             ctx.fillStyle = "#fff";
-            ctx.font = "bold 10px sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText(p.data.name, p.x, p.y - 18);
-        });
+            ctx.shadowBlur = 10; ctx.shadowColor = "#fff";
+            ctx.beginPath(); ctx.arc(this.ball.x, this.ball.y, this.ball.radius, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0;
 
-        // Мяч
-        let b = matchState.ball;
-        let r = 8;
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, r, 0, Math.PI * 2);
-        ctx.fillStyle = "#ffffff";
-        ctx.fill();
-        ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 1;
-        ctx.stroke();
+            // Отрисовка игроков и колец выносливости
+            this.players.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2); ctx.fill();
+                
+                ctx.strokeStyle = "rgba(255,255,255,0.4)";
+                ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.radius * (p.stamina/100), 0, Math.PI*2); ctx.stroke();
 
-        // Рисуем текстуру панелей мяча
-        ctx.fillStyle = "#000000";
-        ctx.beginPath();
-        for (let i = 0; i < 5; i++) {
-            let angle = (i * 2 * Math.PI / 5) - Math.PI / 2;
-            let px = b.x + Math.cos(angle) * (r * 0.35);
-            let py = b.y + Math.sin(angle) * (r * 0.35);
-            if (i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
+                ctx.fillStyle = "#888899";
+                ctx.font = "9px monospace";
+                ctx.fillText(p.bot.name, p.x - 15, p.y - 16);
+            });
+
+            this.pSystem.draw(ctx);
         }
-        ctx.closePath();
-        ctx.fill();
-
-        for (let i = 0; i < 5; i++) {
-            let angle = (i * 2 * Math.PI / 5) - Math.PI / 2;
-            ctx.beginPath();
-            ctx.moveTo(b.x + Math.cos(angle) * (r * 0.35), b.y + Math.sin(angle) * (r * 0.35));
-            ctx.lineTo(b.x + Math.cos(angle) * r, b.y + Math.sin(angle) * r);
-            ctx.stroke();
-        }
-        ctx.restore();
     }
 
-    // --- КОНЕЦ МАТЧА И ИТОГИ ЭЛО ---
-    function endMatch() {
-        matchActive = false;
-        document.getElementById('btn-pause').disabled = true;
-        document.getElementById('btn-1x').disabled = true;
-        document.getElementById('btn-2x').disabled = true;
-        document.getElementById('btn-4x').disabled = true;
-        document.getElementById('btn-next').disabled = false;
+    // --- ОРКЕСТРАТОР ЖИЗНЕННОГО ЦИКЛА ЛИГИ (ENGINE) ---
+    class Engine {
+        static STORAGE_KEY = 'cyber_pitch_deep_nn_v2';
+        static players = []; static teams = [];
+        static matchActive = false; static isPaused = false; static speed = 1;
+        static currentMatch = null; static animId = null; static lastTime = Date.now();
 
-        let w = null, l = null;
-        let draw = matchState.scoreA === matchState.scoreB;
-
-        if (draw) {
-            let sA = matchState.stats.shotsA * 2.5 + matchState.stats.possessionA;
-            let sB = matchState.stats.shotsB * 2.5 + matchState.stats.possessionB;
-            if (sA >= sB) { w = matchState.teamA; l = matchState.teamB; }
-            else { w = matchState.teamB; l = matchState.teamA; }
-            logMessage(`Ничья. По стат-показателям идет дальше ${w.name}!`);
-        } else if (matchState.scoreA > matchState.scoreB) {
-            w = matchState.teamA; l = matchState.teamB;
-        } else {
-            w = matchState.teamB; l = matchState.teamA;
+        static init() {
+            let saved = localStorage.getItem(this.STORAGE_KEY);
+            if (saved) {
+                this.players = JSON.parse(saved).map(j => new Bot(j.id, j.name, j));
+            } else {
+                this.players = Array.from({length: 40}, (_, i) => new Bot(i, NAMES[i]));
+            }
+            this.renderDraft();
+            this.updateLeaderboard();
         }
 
-        tournamentBracket[currentRoundIdx].winners.push(w);
+        static renderDraft() {
+            const pool = document.getElementById('player-pool'); pool.innerHTML = '';
+            this.players.forEach(p => {
+                if (!this.teams.some(t => t.playerIds.includes(p.id))) {
+                    let chip = document.createElement('div');
+                    chip.className = 'player-chip'; chip.id = `b-${p.id}`; chip.draggable = true;
+                    chip.innerText = p.name;
+                    chip.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
+                    chip.onclick = () => this.openModal(p.id);
+                    pool.appendChild(chip);
+                }
+            });
 
-        // Расчет Эло
-        let eloA = matchState.teamA.players.reduce((a,b)=>a+b.elo,0)/5;
-        let eloB = matchState.teamB.players.reduce((a,b)=>a+b.elo,0)/5;
-        let expA = 1 / (1 + Math.pow(10, (eloB - eloA)/400));
-        let expB = 1 / (1 + Math.pow(10, (eloA - eloB)/400));
-        let actA = w === matchState.teamA ? 1 : 0;
-        let actB = w === matchState.teamB ? 1 : 0;
-        if (draw) { actA = 0.5; actB = 0.5; }
+            const container = document.getElementById('teams-container'); container.innerHTML = '';
+            this.teams = Array.from({length: 8}, (_, i) => new Team(i, `Кластер ИИ-${i+1}`, COLORS[i]));
+            
+            this.teams.forEach(t => {
+                let box = document.createElement('div');
+                box.className = 'team-box'; box.style.borderLeftColor = t.color;
+                box.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                        <span style="color:${t.color}; font-weight:bold;">${t.name}</span>
+                        <span id="cnt-${t.id}" style="font-size:11px;">0/5 ядер</span>
+                    </div>
+                    <div class="team-slots" id="slot-${t.id}" ondrop="Engine.handleDrop(event, ${t.id})" ondragover="Engine.allowDrop(event)"></div>
+                `;
+                container.appendChild(box);
+            });
+        }
 
-        let K = 30;
-        matchState.teamA.players.forEach(p => p.elo += K * (actA - expA));
-        matchState.teamB.players.forEach(p => p.elo += K * (actB - expB));
+        static allowDrop(e) { e.preventDefault(); }
+        static handleDrop(e, targetTeamId) {
+            e.preventDefault();
+            let idStr = e.dataTransfer.getData("text");
+            let botId = parseInt(idStr.replace('b-', ''));
 
-        savePlayers();
-        currentMatchInRound++;
-        updateTournamentInfo();
+            this.teams.forEach(t => { t.playerIds = t.playerIds.filter(id => id !== botId); });
+            
+            if (targetTeamId !== 'pool') {
+                let t = this.teams[targetTeamId];
+                if (t.playerIds.length < 5) t.playerIds.push(botId);
+            }
+            
+            this.renderDraft();
+            this.teams.forEach(t => {
+                let el = document.getElementById(`b-${botId}`);
+                if (el && document.getElementById(`slot-${t.id}`)) {
+                    document.getElementById(`slot-${t.id}`).appendChild(el);
+                }
+                let countEl = document.getElementById(`cnt-${t.id}`);
+                if (countEl) countEl.innerText = `${t.playerIds.length}/5 ядер`;
+            });
+
+            document.getElementById('btn-start-tournament').disabled = !this.teams.every(t => t.playerIds.length === 5);
+        }
+
+        static startTournament() {
+            this.teams.forEach(t => t.bots = t.playerIds.map(id => this.players.find(p => p.id === id)));
+            document.getElementById('setup-menu').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+            document.getElementById('tournament-info').innerText = "Генерация суперлиги активна. Ожидание запуска сессии.";
+        }
+
+        static startNextMatch() {
+            let tA = this.teams[Math.floor(Math.random()*8)];
+            let tB = this.teams[Math.floor(Math.random()*8)];
+            while(tA === tB) { tB = this.teams[Math.floor(Math.random()*8)]; }
+
+            this.currentMatch = new Match(tA, tB);
+            this.matchActive = true; this.isPaused = false;
+            document.getElementById('btn-pause').disabled = false;
+            document.getElementById('btn-1x').disabled = false;
+            document.getElementById('btn-2x').disabled = false;
+            document.getElementById('btn-5x').disabled = false;
+            document.getElementById('btn-next').disabled = true;
+
+            this.log(`Инициализация: ${tA.name} vs ${tB.name}`);
+            this.lastTime = Date.now();
+            this.loop();
+        }
+
+        static loop() {
+            if (!Engine.matchActive) return;
+            let now = Date.now();
+            let dt = (now - Engine.lastTime) / 1000;
+            Engine.lastTime = now;
+
+            if (!Engine.isPaused) {
+                for (let i = 0; i < Engine.speed; i++) {
+                    Engine.currentMatch.update(0.016);
+                }
+            }
+
+            const canvas = document.getElementById('pitch');
+            const ctx = canvas.getContext('2d');
+            Engine.currentMatch.draw(ctx);
+
+            let m = Engine.currentMatch;
+            let mins = Math.floor((m.time / m.maxTime) * 90);
+            document.getElementById('ui-time').innerText = `${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
+            document.getElementById('ui-score').innerText = `${m.scoreA} - ${m.scoreB}`;
+            document.getElementById('ui-shots').innerText = `${m.stats.shotsA} - ${m.stats.shotsB}`;
+            let total = m.stats.possessionA + m.stats.possessionB || 1;
+            document.getElementById('ui-possession').innerText = `${Math.round(m.stats.possessionA/total*100)}% - ${Math.round(m.stats.possessionB/total*100)}%`;
+
+            if (m.time < m.maxTime) {
+                Engine.animId = requestAnimationFrame(Engine.loop);
+            } else {
+                Engine.endMatch();
+            }
+        }
+
+        static endMatch() {
+            this.matchActive = false;
+            cancelAnimationFrame(this.animId);
+            document.getElementById('btn-next').disabled = false;
+
+            let m = this.currentMatch;
+            let winTeam = m.scoreA > m.scoreB ? m.teamA : (m.scoreB > m.scoreA ? m.teamB : null);
+            
+            let eloA = m.teamA.bots.reduce((a,b)=>a+b.elo,0)/5;
+            let eloB = m.teamB.bots.reduce((a,b)=>a+b.elo,0)/5;
+            let expA = 1 / (1 + Math.pow(10, (eloB - eloA)/400));
+            let actA = winTeam === m.teamA ? 1 : (winTeam === null ? 0.5 : 0);
+
+            m.teamA.bots.forEach(b => b.elo += 24 * (actA - expA));
+            m.teamB.bots.forEach(b => b.elo += 24 * ((1 - actA) - (1 - expA)));
+
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.players.map(p => p.toJSON())));
+            this.updateLeaderboard();
+            this.log(`Цикл завершен. Изменения градиента сохранены в память.`);
+        }
+
+        static togglePause() { this.isPaused = !this.isPaused; }
+        static setSpeed(s) { this.speed = s; }
+        static log(txt) {
+            let l = document.getElementById('match-log');
+            l.innerHTML += `<div>[sys] -> ${txt}</div>`;
+            l.scrollTop = l.scrollHeight;
+        }
+
+        static updateLeaderboard() {
+            let sorted = [...this.players].sort((a,b)=>b.elo-a.elo).slice(0,5);
+            let h = `<tr><th>Агент</th><th>Эло</th><th>MSE Тренд</th></tr>`;
+            sorted.forEach(p => {
+                h += `<tr><td>${p.name}</td><td><b>${Math.round(p.elo)}</b></td><td>Optimized</td></tr>`;
+            });
+            document.getElementById('top-players-table').innerHTML = h;
+        }
+
+        static openModal(id) {
+            let p = this.players.find(x => x.id === id);
+            document.getElementById('modal-name').innerText = p.name;
+            document.getElementById('modal-elo').innerText = Math.round(p.elo);
+            document.getElementById('lbl-spd').innerText = `${Math.round(p.speed*100)}%`;
+            document.getElementById('lbl-pas').innerText = `${Math.round(p.passAccuracy*100)}%`;
+            document.getElementById('lbl-sht').innerText = `${Math.round(p.shotPower*100)}%`;
+            document.getElementById('m-m').innerText = p.matchesPlayed;
+            document.getElementById('m-g').innerText = p.goals;
+
+            const renderLyr = (elId, count) => {
+                let el = document.getElementById(elId); el.innerHTML = '';
+                for(let i=0; i<count; i++) {
+                    let d = document.createElement('div'); d.className = 'nn-node active';
+                    el.appendChild(d);
+                }
+            };
+            renderLyr('lyr-in', 6); renderLyr('lyr-hid', 8); renderLyr('lyr-out', 3);
+
+            document.getElementById('stats-modal').style.display = 'flex';
+        }
+        static closeModal() { document.getElementById('stats-modal').style.display = 'none'; }
     }
 
-    function togglePause() {
-        isPaused = !isPaused;
-        document.getElementById('btn-pause').innerText = isPaused ? "Старт" : "Пауза";
-    }
-    function setSpeed(s) { gameSpeed = s; }
-    function logMessage(m) {
-        let b = document.getElementById('match-log');
-        b.innerHTML += `<div>> ${m}</div>`;
-        b.scrollTop = b.scrollHeight;
-    }
-    function updateTopTable() {
-        let sorted = [...players].sort((a,b)=>b.elo-a.elo).slice(0,5);
-        let h = `<tr><th>Игрок</th><th>Эло</th><th>Стиль</th></tr>`;
-        sorted.forEach(p => {
-            h += `<tr><td>${p.name}</td><td>${Math.round(p.elo)}</td><td>${p.aggression > p.defense ? 'Атака' : 'Защита'}</td></tr>`;
-        });
-        document.getElementById('top-players-table').innerHTML = h;
-    }
+    const NAMES = ["Neuro-01", "Cortex-X", "Synth-Alpha", "Deep-Mind", "Vector-Z", "Quantum-0", "Keras-Bot", "Tensor-8", "Epoch-X", "Sigmoid", "ReLU-Max", "Gradient", "Loss-Zero", "Matrix", "Cyber-15", "Logic-A", "Boolean", "Algoritm", "Binary", "Cluster", "Node-7", "Helix", "Proxy", "Net-Walker", "Silicon", "Processor", "Buffer", "Core-9", "Cache", "Bit-Shift", "Stack", "Heap", "Pointer", "Compiler", "Asm-Bot", "Kernel", "Daemon", "Thread", "Mutex", "Driver"];
+    const COLORS = ["#ff3333", "#3333ff", "#33ff33", "#ffff33", "#ff33ff", "#33ffff", "#ff9933", "#9933ff"];
 
-    window.onload = loadPlayers;
+    window.onload = () => Engine.init();
 </script>
 </body>
 </html>
