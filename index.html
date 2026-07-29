@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Футбол 5х5: Менеджер Турнира</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-bottom: 30px;
+        }
+        header {
+            margin: 20px 0;
+            text-align: center;
+        }
+        h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #4CAF50;
+        }
+        
+        /* СТИЛИ МЕНЮ РАСПРЕДЕЛЕНИЯ */
+        #setup-menu {
+            display: flex;
+            flex-direction: column;
+            width: 95%;
+            max-width: 1200px;
+            gap: 20px;
+        }
+        .menu-panels {
+            display: flex;
+            gap: 20px;
+        }
+        #pool-container {
+            flex: 1;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        #teams-container {
+            flex: 2;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .team-box {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 12px;
+            border-top: 5px solid #ccc;
+            min-height: 120px;
+        }
+        .player-pool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            min-height: 100px;
+        }
+        .team-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 50px;
+            background: #252525;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px dashed #444;
+        }
+        .player-chip {
+            background: #ffffff;
+            color: #121212;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: grab;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        .player-chip:hover {
+            transform: scale(1.05);
+        }
+        .player-chip:active {
+            cursor: grabbing;
+        }
+
+        /* ИГРОВОЙ ЭКРАН */
+        #game-screen {
+            display: none;
+            gap: 20px;
+            align-items: flex-start;
+            width: 95%;
+            max-width: 1200px;
+        }
+        canvas {
+            background-color: #2e7d32;
+            border: 4px solid #fff;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .sidebar {
+            width: 320px;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            max-height: 550px;
+            overflow-y: auto;
+        }
+        .sidebar h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #444;
+            padding-bottom: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px 0;
+            width: 100%;
+            font-size: 14px;
+        }
+        button:hover { background-color: #45a049; }
+        button:disabled { background-color: #444; color: #777; cursor: not-allowed; }
+        .controls-panel {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .controls-panel button { width: auto; flex: 1; }
+        .stat-item {
+            font-size: 14px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+        #match-log {
+            font-size: 11px;
+            background: #0a0a0a;
+            padding: 8px;
+            border-radius: 4px;
+            height: 90px;
+            overflow-y: auto;
+            font-family: monospace;
+            margin-top: 10px;
+            border: 1px solid #222;
+        }
+        table {
+            width: 100%;
+            font-size: 12px;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 5px;
+            text-align: left;
+        }
+        th { background-color: #2a2a2a; }
+
+        /* МОДАЛЬНОЕ ОКНО СТАТИСТИКИ */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #222;
+            padding: 20px;
+            border-radius: 8px;
+            width: 350px;
+            border: 1px solid #444;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .modal-header h2 { margin: 0; font-size: 20px; color: #4CAF50; }
+        .close-btn { color: #aaa; font-size: 24px; font-weight: bold; cursor: pointer; }
+        .close-btn:hover { color: #fff; }
+        .progress-bar {
+            background-color: #444;
+            border-radius: 4px;
+            height: 8px;
+            width: 100%;
+            margin-top: 4px;
+        }
+        .progress-fill {
+            background-color: #4CAF50;
+            height: 100%;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .stat-group {
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Футбол 5х5: Эволюция Ботов</h1>
+    <p id="sub-title">Распределите 40 ботов по 8 командам (по 5 игроков в каждой)</p>
+</header>
+
+<!-- ЭКРАН НАСТРОЙКИ И ДРАФТА -->
+<div id="setup-menu">
+    <div class="menu-panels">
+        <div id="pool-container">
+            <h3>Свободные агенты (Клик — инфо)</h3>
+            <div class="player-pool-grid" id="player-pool" ondrop="drop(event, 'pool')" ondragover="allowDrop(event)">
+                <!-- Заполняется JS -->
+            </div>
+        </div>
+
+        <div id="teams-container">
+            <!-- 8 команд генерируются JS -->
+        </div>
+    </div>
+    <button id="btn-start-tournament" onclick="startTournament()" style="font-size: 18px; padding: 15px;" disabled>Начать турнир</button>
+</div>
+
+<!-- ИГРОВОЙ ЭКРАН (МАТЧ) -->
+<div id="game-screen">
+    <div>
+        <canvas id="pitch" width="800" height="500"></canvas>
+        <div class="controls-panel">
+            <button id="btn-pause" onclick="togglePause()" disabled>Пауза</button>
+            <button id="btn-1x" onclick="setSpeed(1)" disabled>1x</button>
+            <button id="btn-2x" onclick="setSpeed(2)" disabled>2x</button>
+            <button id="btn-4x" onclick="setSpeed(4)" disabled>4x</button>
+            <button id="btn-next" onclick="startNextMatch()" style="background-color: #2196F3;" disabled>Следующий матч</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h3>Управление сеткой</h3>
+        <div id="tournament-info">Турнир формируется...</div>
+
+        <h3>Матч-статистика</h3>
+        <div class="stat-item"><span>Счет:</span> <span id="ui-score">0 - 0</span></div>
+        <div class="stat-item"><span>Время:</span> <span id="ui-time">00:00</span></div>
+        <div class="stat-item"><span>Владение:</span> <span id="ui-possession">50% - 50%</span></div>
+        <div class="stat-item"><span>Удары:</span> <span id="ui-shots">0 - 0</span></div>
+
+        <h3>Лог событий</h3>
+        <div id="match-log"></div>
+
+        <h3>Топ-5 игроков по Эло</h3>
+        <table id="top-players-table">
+            <tr><th>Игрок</th><th>Эло</th><th>Стиль</th></tr>
+        </table>
+    </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО СТАТИСТИКИ -->
+<div id="stats-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-name">Ник игрока</h2>
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="stat-group">
+            <strong>Рейтинг Эло:</strong> <span id="modal-elo">1000</span>
+        </div>
+        <div class="stat-group">
+            <strong>Текущая роль на поле:</strong> <span id="modal-role">-</span>
+        </div>
+        <div class="stat-group">
+            <div style="display:flex; justify-content:space-between;"><span>Атака / Агрессия:</span><span id="txt-agg">50%</span></div>
+            <div class="progress-bar"><div id="bar-agg" class="progress-fill"></div></div>
+        </div>
+        <div class="stat-group">
+            <div style="display:flex; justify-content:space-between;"><span>Оборона / Защита:</span><span id="txt-def">50%</span></div>
+            <div class="progress-bar"><div id="bar-def" class="progress-fill"></div></div>
+        </div>
+        <div class="stat-group">
+            <div style="display:flex; justify-content:space-between;"><span>Склонность к пасу:</span><span id="txt-pass">50%</span></div>
+            <div class="progress-bar"><div id="bar-pass" class="progress-fill"></div></div>
+        </div>
+        <div class="stat-group" style="margin-top: 15px; border-top: 1px solid #444; padding-top: 10px;">
+            <strong>Развитие карьеры:</strong>
+            <div style="font-size: 13px; margin-top: 5px;">
+                Матчей: <span id="modal-matches">0</span> | Голов: <span id="modal-goals">0</span> | Пасов: <span id="modal-assists">0</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- ИГРОВЫЕ ДАННЫЕ И ЦВЕТА ---
+    const NAMES = [
+        "Торнадо", "Снайпер", "Танк", "Молния", "Стенка", "Хаос", "Стиг", "Феникс",
+        "Блиц", "Кипер", "Титан", "Пуля", "Искра", "Гром", "Тень", "Магнит",
+        "Айс", "Комета", "Вихрь", "Спартанец", "Шторм", "Динамо", "Броня", "Крок",
+        "Фокс", "Лев", "Волк", "Пантера", "Ястреб", "Медведь", "Скорпион", "Цунами",
+        "Пилот", "Рекс", "Метеор", "Барс", "Кент", "Призрак", "Огонь", "Кристалл"
+    ];
+
+    const TEAM_COLORS = [
+        "#ff3b30", // Красный
+        "#007aff", // Синий
+        "#34c759", // Зеленый
+        "#ffcc00", // Желтый
+        "#ff9500", // Оранжевый
+        "#af52de", // Пурпурный
+        "#5ac8fa", // Циановый
+        "#ff2d55" // Розовый
+    ];
+
+    let players = [];
+    let teams = [];
+    let tournamentBracket = [];
+    let currentRoundIdx = 0;
+    let currentMatchInRound = 0;
+    let matchActive = false;
+    let gameSpeed = 1;
+    let isPaused = false;
+
+    // Инициализация / Загрузка ботов
+    function loadPlayers() {
+        let saved = localStorage.getItem('football_bots_elo_v2');
+        if (saved) {
+            try { players = JSON.parse(saved); } catch(e) { players = []; }
+        }
+        if (players.length !== 40) {
+            players = NAMES.map((name, i) => ({
+                id: i,
+                name: name,
+                elo: 1000,
+                aggression: Math.random() * 0.5 + 0.3,
+                passing: Math.random() * 0.5 + 0.3,
+                defense: Math.random() * 0.5 + 0.3,
+                role: 'Универсал',
+                goals: 0,
+                assists: 0,
+                matchesPlayed: 0
+            }));
+            savePlayers();
+        }
+        buildDraftMenu();
+        updateTopTable();
+    }
+
+    function savePlayers() {
+        localStorage.setItem('football_bots_elo_v2', JSON.stringify(players));
+        updateTopTable();
+    }
+
+    // --- ИНТЕРФЕЙС ДРАФТА И ПЕРЕТАСКИВАНИЯ ---
+    function buildDraftMenu() {
+        // Создаем пул игроков
+        const poolEl = document.getElementById('player-pool');
+        poolEl.innerHTML = '';
+        players.forEach(p => {
+            let chip = document.createElement('div');
+            chip.className = 'player-chip';
+            chip.id = `player-${p.id}`;
+            chip.draggable = true;
+            chip.innerText = p.name;
+            chip.ondragstart = drag;
+            chip.onclick = (e) => { e.stopPropagation(); openStats(p.id); };
+            poolEl.appendChild(chip);
+        });
+
+        // Создаем 8 команд
+        const teamsContainer = document.getElementById('teams-container');
+        teamsContainer.innerHTML = '';
+        teams = [];
+        for (let i = 0; i < 8; i++) {
+            teams.push({
+                id: i,
+                name: `Команда ${i+1}`,
+                color: TEAM_COLORS[i],
+                playerIds: []
+            });
+
+            let tBox = document.createElement('div');
+            tBox.className = 'team-box';
+            tBox.style.borderTopColor = TEAM_COLORS[i];
+            tBox.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                    <strong style="color:${TEAM_COLORS[i]}">Команда ${i+1}</strong>
+                    <span id="count-${i}" style="font-size:12px;">0 / 5</span>
+                </div>
+                <div class="team-slots" id="team-slot-${i}" ondrop="drop(event, ${i})" ondragover="allowDrop(event)"></div>
+            `;
+            teamsContainer.appendChild(tBox);
+        }
+    }
+
+    function allowDrop(ev) { ev.preventDefault(); }
+    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+
+    function drop(ev, target) {
+        ev.preventDefault();
+        let data = ev.dataTransfer.getData("text");
+        let playerEl = document.getElementById(data);
+        let playerId = parseInt(data.replace('player-', ''));
+
+        // Находим, откуда пришел игрок
+        let originTeamIdx = teams.findIndex(t => t.playerIds.includes(playerId));
+
+        if (target === 'pool') {
+            // Возвращаем в пул свободный агентов
+            if (originTeamIdx !== -1) {
+                teams[originTeamIdx].playerIds = teams[originTeamIdx].playerIds.filter(id => id !== playerId);
+                document.getElementById(`count-${originTeamIdx}`).innerText = `${teams[originTeamIdx].playerIds.length} / 5`;
+            }
+            document.getElementById('player-pool').appendChild(playerEl);
+        } else {
+            // Перетаскиваем в команду
+            let targetTeam = teams[target];
+            if (targetTeam.playerIds.length >= 5) {
+                alert("В команде не может быть больше 5 игроков!");
+                return;
+            }
+
+            // Удаляем из старой команды, если был там
+            if (originTeamIdx !== -1) {
+                teams[originTeamIdx].playerIds = teams[originTeamIdx].playerIds.filter(id => id !== playerId);
+                document.getElementById(`count-${originTeamIdx}`).innerText = `${teams[originTeamIdx].playerIds.length} / 5`;
+            }
+
+            targetTeam.playerIds.push(playerId);
+            document.getElementById(`team-slot-${target}`).appendChild(playerEl);
+            document.getElementById(`count-${target}`).innerText = `${targetTeam.playerIds.length} / 5`;
+        }
+
+        checkTournamentReady();
+    }
+
+    function checkTournamentReady() {
+        let allReady = teams.every(t => t.playerIds.length === 5);
+        document.getElementById('btn-start-tournament').disabled = !allReady;
+    }
+
+    // --- ОКНО СТАТИСТИКИ ---
+    function openStats(id) {
+        let p = players.find(x => x.id === id);
+        document.getElementById('modal-name').innerText = p.name;
+        document.getElementById('modal-elo').innerText = Math.round(p.elo);
+        document.getElementById('modal-role').innerText = p.role;
+        
+        document.getElementById('txt-agg').innerText = `${Math.round(p.aggression * 100)}%`;
+        document.getElementById('bar-agg').style.width = `${p.aggression * 100}%`;
+
+        document.getElementById('txt-def').innerText = `${Math.round(p.defense * 100)}%`;
+        document.getElementById('bar-def').style.width = `${p.defense * 100}%`;
+
+        document.getElementById('txt-pass').innerText = `${Math.round(p.passing * 100)}%`;
+        document.getElementById('bar-pass').style.width = `${p.passing * 100}%`;
+
+        document.getElementById('modal-matches').innerText = p.matchesPlayed || 0;
+        document.getElementById('modal-goals').innerText = p.goals;
+        document.getElementById('modal-assists').innerText = p.assists;
+
+        document.getElementById('stats-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('stats-modal').style.display = 'none';
+    }
+
+    // --- ИНИЦИАЛИЗАЦИЯ СЕТКИ ТУРНИРА ---
+    function startTournament() {
+        // Заменяем id игроков на полноценные объекты для удобства турнира
+        teams.forEach(t => {
+            t.players = t.playerIds.map(id => players.find(p => p.id === id));
+        });
+
+        document.getElementById('setup-menu').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'flex';
+
+        tournamentBracket = [
+            { round: '1/4 финала', matches: [[0,1], [2,3], [4,5], [6,7]], winners: [] },
+            { round: 'Полуфинал', matches: [[0,1], [2,3]], winners: [] },
+            { round: 'Финал', matches: [[0,1]], winners: [] }
+        ];
+        currentRoundIdx = 0;
+        currentMatchInRound = 0;
+
+        document.getElementById('btn-next').disabled = false;
+        logMessage("Турнирная сетка сформирована. Матчи готовы к запуску!");
+        updateTournamentInfo();
+    }
+
+    function updateTournamentInfo() {
+        if (currentRoundIdx >= tournamentBracket.length) {
+            document.getElementById('tournament-info').innerHTML = `<b>Турнир завершен!</b>`;
+            document.getElementById('btn-next').disabled = true;
+            return;
+        }
+        let round = tournamentBracket[currentRoundIdx];
+        document.getElementById('tournament-info').innerHTML = `
+            <b>Раунд:</b> ${round.round}<br>
+            Матч ${currentMatchInRound + 1} из ${round.matches.length}
+        `;
+    }
+
+    // --- СИМУЛЯЦИЯ МАТЧА НА CANVAS ---
+    const canvas = document.getElementById('pitch');
+    const ctx = canvas.getContext('2d');
+    let matchState = null;
+
+    function startNextMatch() {
+        let round = tournamentBracket[currentRoundIdx];
+        if (!round || currentMatchInRound >= round.matches.length) {
+            currentRoundIdx++;
+            currentMatchInRound = 0;
+            round = tournamentBracket[currentRoundIdx];
+            if (currentRoundIdx >= tournamentBracket.length) {
+                updateTournamentInfo();
+                return;
+            }
+        }
+
+        let pair = round.matches[currentMatchInRound];
+        let teamA, teamB;
+
+        if (currentRoundIdx === 0) {
+            teamA = teams[pair[0]];
+            teamB = teams[pair[1]];
+        } else {
+            let prevWinners = tournamentBracket[currentRoundIdx - 1].winners;
+            teamA = prevWinners[pair[0]];
+            teamB = prevWinners[pair[1]];
+        }
+
+        setupMatch(teamA, teamB);
+    }
+
+    function setupMatch(teamA, teamB) {
+        matchActive = true;
+        isPaused = false;
+        document.getElementById('btn-pause').disabled = false;
+        document.getElementById('btn-1x').disabled = false;
+        document.getElementById('btn-2x').disabled = false;
+        document.getElementById('btn-4x').disabled = false;
+        document.getElementById('btn-next').disabled = true;
+
+        matchState = {
+            teamA: teamA,
+            teamB: teamB,
+            scoreA: 0,
+            scoreB: 0,
+            time: 0,
+            maxTime: 90,
+            ball: { x: 400, y: 250, vx: 0, vy: 0, holder: null },
+            stats: { possessionA: 0, possessionB: 0, shotsA: 0, shotsB: 0 },
+            players: []
+        };
+
+        // Запуск игроков на поле
+        teamA.players.forEach((p, idx) => {
+            p.matchesPlayed = (p.matchesPlayed || 0) + 1;
+            matchState.players.push({
+                data: p, team: 'A',
+                x: 120 + (idx === 0 ? 0 : Math.random() * 80),
+                y: 80 + idx * 80,
+                radius: 13, color: teamA.color
+            });
+        });
+
+        teamB.players.forEach((p, idx) => {
+            p.matchesPlayed = (p.matchesPlayed || 0) + 1;
+            matchState.players.push({
+                data: p, team: 'B',
+                x: 680 - (idx === 0 ? 0 : Math.random() * 80),
+                y: 80 + idx * 80,
+                radius: 13, color: teamB.color
+            });
+        });
+
+        logMessage(`Матч: ${teamA.name} vs ${teamB.name}`);
+        lastTick = Date.now();
+        requestAnimationFrame(gameLoop);
+    }
+
+    let lastTick = Date.now();
+    function gameLoop() {
+        if (!matchActive) return;
+
+        let now = Date.now();
+        if (!isPaused) {
+            for (let s = 0; s < gameSpeed; s++) {
+                updatePhysics(0.016);
+            }
+        }
+        drawPitch();
+
+        if (matchState.time < matchState.maxTime && matchActive) {
+            requestAnimationFrame(gameLoop);
+        } else if (matchActive) {
+            endMatch();
+        }
+    }
+
+    function updatePhysics(dt) {
+        matchState.time += dt * 0.4;
+        let mins = Math.floor((matchState.time / matchState.maxTime) * 90);
+        document.getElementById('ui-time').innerText = `${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
+
+        if (matchState.ball.holder) {
+            if (matchState.ball.holder.team === 'A') matchState.stats.possessionA++;
+            else matchState.stats.possessionB++;
+        }
+        let totalP = matchState.stats.possessionA + matchState.stats.possessionB || 1;
+        document.getElementById('ui-possession').innerText = `${Math.round(matchState.stats.possessionA/totalP*100)}% - ${Math.round(matchState.stats.possessionB/totalP*100)}%`;
+
+        // Роли
+        if (matchState.time < 3) {
+            matchState.players.forEach(p => {
+                if (p.team === 'A') {
+                    p.data.role = p.x < 150 ? 'Вратарь' : (p.x < 300 ? 'Защитник' : 'Нападающий');
+                } else {
+                    p.data.role = p.x > 650 ? 'Вратарь' : (p.x > 500 ? 'Защитник' : 'Нападающий');
+                }
+            });
+        }
+
+        let ball = matchState.ball;
+
+        matchState.players.forEach(p => {
+            let targetX = ball.x;
+            let targetY = ball.y;
+
+            if (p.data.role === 'Вратарь') {
+                targetX = p.team === 'A' ? 45 : 755;
+                targetY = Math.max(190, Math.min(310, ball.y));
+            } else {
+                let isOurBall = ball.holder && ball.holder.team === p.team;
+                if (!isOurBall) {
+                    targetX = ball.x - (p.team === 'A' ? 20 : -20);
+                } else {
+                    targetX = ball.x + (p.team === 'A' ? 40 : -40);
+                }
+            }
+
+            let angle = Math.atan2(targetY - p.y, targetX - p.x);
+            let speed = 2.0 + (p.data.elo - 1000) / 600;
+            p.x += Math.cos(angle) * Math.max(1.4, speed);
+            p.y += Math.sin(angle) * Math.max(1.4, speed);
+
+            // Границы поля
+            p.x = Math.max(25, Math.min(775, p.x));
+            p.y = Math.max(25, Math.min(475, p.y));
+
+            // Подбор мяча
+            let d = Math.hypot(p.x - ball.x, p.y - ball.y);
+            if (d < p.radius + 8 && !ball.holder) {
+                ball.holder = p;
+            }
+        });
+
+        // Физика мяча
+        if (ball.holder) {
+            ball.x = ball.holder.x + (ball.holder.team === 'A' ? 14 : -14);
+            ball.y = ball.holder.y;
+
+            let gX = ball.holder.team === 'A' ? 775 : 25;
+            let distG = Math.abs(gX - ball.holder.x);
+
+            if (distG < 220 && Math.random() < 0.04) {
+                // Удар
+                let power = 9;
+                let tY = 250 + (Math.random() * 80 - 40);
+                let angle = Math.atan2(tY - ball.y, gX - ball.x);
+                ball.vx = Math.cos(angle) * power;
+                ball.vy = Math.sin(angle) * power;
+
+                if (ball.holder.team === 'A') matchState.stats.shotsA++;
+                else matchState.stats.shotsB++;
+
+                logMessage(`${ball.holder.data.name} наносит удар!`);
+                ball.holder = null;
+            }
+        } else {
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+            ball.vx *= 0.97;
+            ball.vy *= 0.97;
+
+            // Голы
+            if (ball.x <= 30 && ball.y > 180 && ball.y < 320) {
+                matchState.scoreB++;
+                onGoal('B');
+            } else if (ball.x >= 770 && ball.y > 180 && ball.y < 320) {
+                matchState.scoreA++;
+                onGoal('A');
+            }
+
+            // Борта
+            if (ball.y <= 22 || ball.y >= 478) ball.vy *= -1;
+            if (ball.x <= 22 || ball.x >= 778) {
+                if (!(ball.y > 180 && ball.y < 320)) ball.vx *= -1;
+            }
+        }
+
+        document.getElementById('ui-score').innerText = `${matchState.scoreA} - ${matchState.scoreB}`;
+        document.getElementById('ui-shots').innerText = `${matchState.stats.shotsA} - ${matchState.stats.shotsB}`;
+    }
+
+    function onGoal(scoringTeam) {
+        logMessage(`ГОЛ! Отличилась ${scoringTeam === 'A' ? matchState.teamA.name : matchState.teamB.name}`);
+        
+        // Даем гол автору удара или случайному игроку атаки
+        let teamPlayers = scoringTeam === 'A' ? matchState.teamA.players : matchState.teamB.players;
+        let scorer = teamPlayers[Math.floor(Math.random() * teamPlayers.length)];
+        scorer.goals++;
+
+        matchState.ball = { x: 400, y: 250, vx: 0, vy: 0, holder: null };
+
+        // Эволюция стилей при голе
+        matchState.players.forEach(p => {
+            if (p.team !== scoringTeam) {
+                p.data.defense = Math.min(1.0, p.data.defense + 0.04);
+                p.data.aggression = Math.max(0.1, p.data.aggression - 0.04);
+            } else {
+                p.data.aggression = Math.min(1.0, p.data.aggression + 0.03);
+            }
+        });
+    }
+
+    // РИСОВАНИЕ КЛАССИЧЕСКОГО ФУТБОЛЬНОГО МЯЧА И ПОЛЯ
+    function drawPitch() {
+        ctx.clearRect(0, 0, 800, 500);
+        ctx.strokeStyle = "rgba(255,255,255,0.4)";
+        ctx.lineWidth = 3;
+
+        // Поле
+        ctx.strokeRect(20, 20, 760, 460);
+        ctx.beginPath();
+        ctx.moveTo(400, 20); ctx.lineTo(400, 480);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(400, 250, 70, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeRect(20, 160, 40, 180);
+        ctx.strokeRect(740, 160, 40, 180);
+
+        // Боты
+        matchState.players.forEach(p => {
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "#ffffff";
+            ctx.stroke();
+
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 10px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(p.data.name, p.x, p.y - 18);
+        });
+
+        // Мяч
+        let b = matchState.ball;
+        let r = 8;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Рисуем текстуру панелей мяча
+        ctx.fillStyle = "#000000";
+        ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+            let angle = (i * 2 * Math.PI / 5) - Math.PI / 2;
+            let px = b.x + Math.cos(angle) * (r * 0.35);
+            let py = b.y + Math.sin(angle) * (r * 0.35);
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        for (let i = 0; i < 5; i++) {
+            let angle = (i * 2 * Math.PI / 5) - Math.PI / 2;
+            ctx.beginPath();
+            ctx.moveTo(b.x + Math.cos(angle) * (r * 0.35), b.y + Math.sin(angle) * (r * 0.35));
+            ctx.lineTo(b.x + Math.cos(angle) * r, b.y + Math.sin(angle) * r);
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+
+    // --- КОНЕЦ МАТЧА И ИТОГИ ЭЛО ---
+    function endMatch() {
+        matchActive = false;
+        document.getElementById('btn-pause').disabled = true;
+        document.getElementById('btn-1x').disabled = true;
+        document.getElementById('btn-2x').disabled = true;
+        document.getElementById('btn-4x').disabled = true;
+        document.getElementById('btn-next').disabled = false;
+
+        let w = null, l = null;
+        let draw = matchState.scoreA === matchState.scoreB;
+
+        if (draw) {
+            let sA = matchState.stats.shotsA * 2.5 + matchState.stats.possessionA;
+            let sB = matchState.stats.shotsB * 2.5 + matchState.stats.possessionB;
+            if (sA >= sB) { w = matchState.teamA; l = matchState.teamB; }
+            else { w = matchState.teamB; l = matchState.teamA; }
+            logMessage(`Ничья. По стат-показателям идет дальше ${w.name}!`);
+        } else if (matchState.scoreA > matchState.scoreB) {
+            w = matchState.teamA; l = matchState.teamB;
+        } else {
+            w = matchState.teamB; l = matchState.teamA;
+        }
+
+        tournamentBracket[currentRoundIdx].winners.push(w);
+
+        // Расчет Эло
+        let eloA = matchState.teamA.players.reduce((a,b)=>a+b.elo,0)/5;
+        let eloB = matchState.teamB.players.reduce((a,b)=>a+b.elo,0)/5;
+        let expA = 1 / (1 + Math.pow(10, (eloB - eloA)/400));
+        let expB = 1 / (1 + Math.pow(10, (eloA - eloB)/400));
+        let actA = w === matchState.teamA ? 1 : 0;
+        let actB = w === matchState.teamB ? 1 : 0;
+        if (draw) { actA = 0.5; actB = 0.5; }
+
+        let K = 30;
+        matchState.teamA.players.forEach(p => p.elo += K * (actA - expA));
+        matchState.teamB.players.forEach(p => p.elo += K * (actB - expB));
+
+        savePlayers();
+        currentMatchInRound++;
+        updateTournamentInfo();
+    }
+
+    function togglePause() {
+        isPaused = !isPaused;
+        document.getElementById('btn-pause').innerText = isPaused ? "Старт" : "Пауза";
+    }
+    function setSpeed(s) { gameSpeed = s; }
+    function logMessage(m) {
+        let b = document.getElementById('match-log');
+        b.innerHTML += `<div>> ${m}</div>`;
+        b.scrollTop = b.scrollHeight;
+    }
+    function updateTopTable() {
+        let sorted = [...players].sort((a,b)=>b.elo-a.elo).slice(0,5);
+        let h = `<tr><th>Игрок</th><th>Эло</th><th>Стиль</th></tr>`;
+        sorted.forEach(p => {
+            h += `<tr><td>${p.name}</td><td>${Math.round(p.elo)}</td><td>${p.aggression > p.defense ? 'Атака' : 'Защита'}</td></tr>`;
+        });
+        document.getElementById('top-players-table').innerHTML = h;
+    }
+
+    window.onload = loadPlayers;
+</script>
+</body>
+</html>
